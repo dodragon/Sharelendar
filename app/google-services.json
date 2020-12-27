@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "848537636469",
+    "firebase_url": "https://sharelendar-8841b.firebaseio.com",
+    "project_id": "sharelendar-8841b",
+    "storage_bucket": "sharelendar-8841b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:848537636469:android:566fd7ee927c59890b723c",
+        "android_client_info": {
+          "package_name": "com.dod.sharelendar"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "848537636469-5qq2su1vhvh0kh84d8trqh1k15o4bi4s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dod.sharelendar",
+            "certificate_hash": "5e58984c94c8155bf1c93df40b7f72db1254bfc4"
+          }
+        },
+        {
+          "client_id": "848537636469-ttq5r8cej6rn3ucg58fo9vrgi88picqa.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJ8MIJQtKBFkTmQj8uebnsfl5FF4AoZRM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "848537636469-ttq5r8cej6rn3ucg58fo9vrgi88picqa.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
