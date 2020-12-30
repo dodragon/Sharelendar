@@ -1,5 +1,6 @@
 package com.dod.sharelendar;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -11,19 +12,30 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.dod.sharelendar.adapter.CalendarViewPagerAdapter;
 import com.dod.sharelendar.data.DayModel;
+import com.dod.sharelendar.data.EventModel;
 import com.dod.sharelendar.data.MonthModel;
 import com.dod.sharelendar.data.YearModel;
+import com.dod.sharelendar.dialog.EventDialog;
 import com.dod.sharelendar.dialog.LoadingDialog;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class CalendarActivity extends AppCompatActivity {
+
+    FirebaseFirestore db;
 
     private static final int CALENDAR_START_YEAR = 1994;
     private static final int CALENDAR_END_YEAR = 2100;
@@ -31,6 +43,8 @@ public class CalendarActivity extends AppCompatActivity {
     private String uuid;
 
     LoadingDialog loading;
+
+    public static Date SELECT_DAY = null;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -44,40 +58,19 @@ public class CalendarActivity extends AppCompatActivity {
         loading.setCanceledOnTouchOutside(false);
         loading.show();
 
+        db = FirebaseFirestore.getInstance();
+
         Calendar cal = Calendar.getInstance();
         uuid = getIntent().getStringExtra("uuid");
-
-        List<MonthModel> list = getAllYearList();
-
-        int selectPosition = 0;
-        for(int i=0;i<list.size();i++){
-            if(list.get(i).getYear() == cal.get(Calendar.YEAR) && list.get(i).getMonth() == (cal.get(Calendar.MONTH) + 1)){
-                selectPosition = i;
-                break;
-            }
-        }
 
         ((TextView)findViewById(R.id.year_month)).setText(cal.get(Calendar.YEAR)
                 + "년 "
                 + (cal.get(Calendar.MONTH) + 1)
                 + "월");
 
-        ViewPager2 viewPager = findViewById(R.id.viewPager);
-        CalendarViewPagerAdapter adapter = new CalendarViewPagerAdapter(list, this);
-        viewPager.setAdapter(adapter);
-        viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
-        viewPager.setCurrentItem(selectPosition, false);
-        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageSelected(int position) {
-                super.onPageSelected(position);
-
-                ((TextView)findViewById(R.id.year_month)).setText(list.get(position).getYear()
-                        + "년 "
-                        + list.get(position).getMonth()
-                        + "월");
-            }
-        });
+        ((TextView)findViewById(R.id.year)).setText(String.valueOf(cal.get(Calendar.YEAR)));
+        ((TextView)findViewById(R.id.month)).setText(String.valueOf(cal.get(Calendar.MONTH) + 1));
+        ((TextView)findViewById(R.id.day)).setText(String.valueOf(cal.get(Calendar.DAY_OF_MONTH)));
 
         findViewById(R.id.option).setOnClickListener(v -> {
             Intent intent = new Intent(CalendarActivity.this, CalendarOptionActivity.class);
@@ -85,7 +78,87 @@ public class CalendarActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        loading.dismiss();
+        db.collection("event")
+                .whereEqualTo("calendar", uuid)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if(task.isSuccessful()){
+                            List<EventModel> eventList = new ArrayList<>();
+                            for(DocumentSnapshot document : task.getResult()){
+                                EventModel eventModel = new EventModel();
+                                eventModel.setCalendar(uuid);
+                                eventModel.setColor(document.getString("color"));
+                                eventModel.setEventDate(document.getDate("event_date"));
+                                eventModel.setEventName(document.getString("event_name"));
+                                eventModel.setEveryYear(document.getBoolean("every_year"));
+                                eventModel.setMakeDate(document.getDate("make_date"));
+                                eventModel.setMakeUser(document.getString("make_user"));
+                                eventList.add(eventModel);
+                            }
+
+                            List<MonthModel> list = getAllYearList();
+
+                            int selectPosition = 0;
+                            for(int i=0;i<list.size();i++){
+                                if(list.get(i).getYear() == cal.get(Calendar.YEAR) && list.get(i).getMonth() == (cal.get(Calendar.MONTH) + 1)){
+                                    selectPosition = i;
+                                    break;
+                                }
+                            }
+
+                            ViewPager2 viewPager = findViewById(R.id.viewPager);
+                            CalendarViewPagerAdapter adapter = new CalendarViewPagerAdapter(list, eventList, CalendarActivity.this, getEventDayList());
+                            viewPager.setAdapter(adapter);
+                            viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+                            viewPager.setCurrentItem(selectPosition, false);
+                            viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+                                @Override
+                                public void onPageSelected(int position) {
+                                    super.onPageSelected(position);
+
+                                    ((TextView)findViewById(R.id.year_month)).setText(list.get(position).getYear()
+                                            + "년 "
+                                            + list.get(position).getMonth()
+                                            + "월");
+                                }
+                            });
+
+                            findViewById(R.id.event_add).setOnClickListener(v -> {
+                                if(SELECT_DAY == null){
+                                    Toast.makeText(CalendarActivity.this, "날짜를 선택 해 주세요.", Toast.LENGTH_SHORT).show();
+                                }else {
+                                    EventDialog dialog = EventDialog.getInstance(getEventDayList(), eventList, CalendarActivity.this, SELECT_DAY);
+                                    dialog.show(getSupportFragmentManager(), "EVENT_DIALOG");
+                                }
+                            });
+
+                            loading.dismiss();
+                        }else {
+                            Log.d("캘린더 생성", task.getException().getLocalizedMessage());
+                            Toast.makeText(CalendarActivity.this, "캘린더 조회 실패 !", Toast.LENGTH_SHORT).show();
+                            finish();
+                            loading.dismiss();
+                        }
+                    }
+                });
+    }
+
+    private List<Date> getEventDayList(){
+        List<Date> list = new ArrayList<>();
+        List<MonthModel> yearList = getAllYearList();
+
+        for(int i=0;i<yearList.size();i++){
+            List<DayModel> dayList = yearList.get(i).getDayList();
+            for(int j=0;j<dayList.size();j++){
+                if(dayList.get(j).getDate() != null){
+                    list.add(dayList.get(j).getDate());
+                }
+            }
+        }
+
+        return list;
     }
 
     private List<MonthModel> getAllYearList(){
@@ -181,5 +254,4 @@ public class CalendarActivity extends AppCompatActivity {
 
         return korDayOfWeek;
     }
-
 }

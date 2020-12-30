@@ -11,14 +11,14 @@ public class EventModel implements Serializable {
     private String calendar;
     @SerializedName("color")
     private String color;
+    @SerializedName("event_date")
+    private Date eventDate;
     @SerializedName("event_name")
     private String eventName;
+    @SerializedName("event_comment")
+    private String eventComment;
     @SerializedName("make_user")
     private String makeUser;
-    @SerializedName("start_date")
-    private Date startDate;
-    @SerializedName("end_date")
-    private Date endDate;
     @SerializedName("every_year")
     private boolean everyYear;
     @SerializedName("make_date")
@@ -40,6 +40,14 @@ public class EventModel implements Serializable {
         this.color = color;
     }
 
+    public Date getEventDate() {
+        return eventDate;
+    }
+
+    public void setEventDate(Date eventDate) {
+        this.eventDate = eventDate;
+    }
+
     public String getEventName() {
         return eventName;
     }
@@ -48,28 +56,20 @@ public class EventModel implements Serializable {
         this.eventName = eventName;
     }
 
+    public String getEventComment() {
+        return eventComment;
+    }
+
+    public void setEventComment(String eventComment) {
+        this.eventComment = eventComment;
+    }
+
     public String getMakeUser() {
         return makeUser;
     }
 
     public void setMakeUser(String makeUser) {
         this.makeUser = makeUser;
-    }
-
-    public Date getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate;
-    }
-
-    public Date getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(Date endDate) {
-        this.endDate = endDate;
     }
 
     public boolean isEveryYear() {
@@ -93,10 +93,10 @@ public class EventModel implements Serializable {
         return "EventModel{" +
                 "calendar='" + calendar + '\'' +
                 ", color='" + color + '\'' +
+                ", eventDate=" + eventDate +
                 ", eventName='" + eventName + '\'' +
+                ", eventComment='" + eventComment + '\'' +
                 ", makeUser='" + makeUser + '\'' +
-                ", startDate=" + startDate +
-                ", endDate=" + endDate +
                 ", everyYear=" + everyYear +
                 ", makeDate=" + makeDate +
                 '}';

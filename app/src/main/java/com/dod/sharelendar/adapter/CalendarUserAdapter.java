@@ -29,18 +29,15 @@ public class CalendarUserAdapter extends RecyclerView.Adapter<CalendarUserAdapte
     Map<String, String> map;
     String calUuid;
     Context context;
-    String thisDiv;
 
     private String url = "https://firebasestorage.googleapis.com/v0/b/sharelendar-8841b.appspot.com/o/";
     private String endUrl = "?alt=media";
 
-    public CalendarUserAdapter(List<UserModel> list, Map<String, String> map, String calUuid,
-                               String thisDiv, Context context) {
+    public CalendarUserAdapter(List<UserModel> list, Map<String, String> map, String calUuid, Context context) {
         this.list = list;
         this.map = map;
         this.calUuid = calUuid;
         this.context = context;
-        this.thisDiv = thisDiv;
     }
 
     @NonNull

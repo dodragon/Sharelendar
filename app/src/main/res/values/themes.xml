@@ -14,7 +14,7 @@
         <item name="windowNoTitle">true</item>
         <!-- Customize your theme here. -->
     </style>
-    <style name="MakeDialog">
+    <style name="MakeDialog" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowAnimationStyle">@style/FullscreenDialog.Window</item>
         <item name="android:layout_width">match_parent</item>

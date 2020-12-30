@@ -12,19 +12,26 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.dod.sharelendar.R;
 import com.dod.sharelendar.data.DayModel;
+import com.dod.sharelendar.data.EventModel;
 import com.dod.sharelendar.data.MonthModel;
 import com.dod.sharelendar.data.YearModel;
 
+import java.util.Date;
 import java.util.List;
 
 public class CalendarViewPagerAdapter extends RecyclerView.Adapter<CalendarViewPagerAdapter.ViewHolder> {
 
     List<MonthModel> list;
+    List<EventModel> eventList;
     Context context;
 
-    public CalendarViewPagerAdapter(List<MonthModel> list, Context context) {
+    List<Date> eventDayList;
+
+    public CalendarViewPagerAdapter(List<MonthModel> list, List<EventModel> eventList, Context context, List<Date> eventDayList) {
         this.list = list;
+        this.eventList = eventList;
         this.context = context;
+        this.eventDayList = eventDayList;
     }
 
     @NonNull
@@ -40,7 +47,7 @@ public class CalendarViewPagerAdapter extends RecyclerView.Adapter<CalendarViewP
         MonthModel vo = list.get(position);
 
         RecyclerView recyclerView = holder.recyclerView;
-        CalendarAdapter adapter = new CalendarAdapter(vo.getDayList(), context);
+        CalendarAdapter adapter = new CalendarAdapter(vo.getDayList(), eventList, context, eventDayList);
         GridLayoutManager layoutManager = new GridLayoutManager(context.getApplicationContext(), 7);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
