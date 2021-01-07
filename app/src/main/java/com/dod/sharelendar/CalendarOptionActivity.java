@@ -1,5 +1,6 @@
 package com.dod.sharelendar;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -21,6 +22,7 @@ import com.dod.sharelendar.adapter.CalendarUserAdapter;
 import com.dod.sharelendar.data.CalendarModel;
 import com.dod.sharelendar.data.UserModel;
 import com.dod.sharelendar.dialog.LoadingDialog;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -71,8 +73,6 @@ public class CalendarOptionActivity extends AppCompatActivity {
                             divMap.put(document.get("email").toString(), document.get("div").toString());
                         }
 
-                        makeUserList(divMap, userList);
-
                         RecyclerView recyclerView = findViewById(R.id.recycler);
                         recyclerView.setLayoutManager(new LinearLayoutManager(CalendarOptionActivity.this));
                         CalendarUserAdapter adapter = new CalendarUserAdapter(makeUserList(divMap, userList), divMap, uuid, CalendarOptionActivity.this);
@@ -88,6 +88,10 @@ public class CalendarOptionActivity extends AppCompatActivity {
 
         setInviteLinkBtn();
         findViewById(R.id.exit_cal).setOnClickListener(v -> {
+            LoadingDialog loading = new LoadingDialog(this);
+            loading.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            loading.setCancelable(false);
+            loading.setCanceledOnTouchOutside(false);
             loading.show();
 
             SharedPreferences spf = getSharedPreferences("user", MODE_PRIVATE);
@@ -130,6 +134,7 @@ public class CalendarOptionActivity extends AppCompatActivity {
                                                                                     for (DocumentSnapshot document1 : task11.getResult()) {
                                                                                         deleteCalendar(document1.getId());
                                                                                     }
+                                                                                    deleteAllEvent(uuid);
                                                                                 } else {
                                                                                     Toast.makeText(CalendarOptionActivity.this, "캘린더 삭제 실패..!", Toast.LENGTH_SHORT).show();
                                                                                     Log.d("calendar_delete11", task11.getException().getLocalizedMessage());
@@ -160,6 +165,7 @@ public class CalendarOptionActivity extends AppCompatActivity {
                                                                 for (DocumentSnapshot document12 : task12.getResult()) {
                                                                     deleteUserCalendar(document12.getId(), true);
                                                                 }
+                                                                deleteMyEvent(uuid, email);
                                                             } else {
                                                                 Toast.makeText(CalendarOptionActivity.this, "캘린더 나가기 실패..!", Toast.LENGTH_SHORT).show();
                                                                 Log.d("calendar_exit", task12.getException().getLocalizedMessage());
@@ -179,6 +185,60 @@ public class CalendarOptionActivity extends AppCompatActivity {
                         }
                     });
         });
+
+        if(loading.isShowing()){
+            loading.dismiss();
+        }
+    }
+
+    private void deleteAllEvent(String calUuid){
+        db.collection("event")
+                .whereEqualTo("calendar", calUuid)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if(task.isSuccessful()){
+                            for(DocumentSnapshot document : task.getResult()){
+                                deleteEvent(document.getId());
+                            }
+                        }else {
+                            Log.d("Event Doc Select Fail", task.getException().getLocalizedMessage());
+                        }
+                    }
+                });
+    }
+
+    private void deleteMyEvent(String calUuid, String email){
+        db.collection("event")
+                .whereEqualTo("calendar", calUuid)
+                .whereEqualTo("email", email)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if(task.isSuccessful()){
+                            for(DocumentSnapshot document : task.getResult()){
+                                deleteEvent(document.getId());
+                            }
+                        }else {
+                            Log.d("Event Doc Select Fail", task.getException().getLocalizedMessage());
+                        }
+                    }
+                });
+    }
+
+    private void deleteEvent(String docId){
+        db.collection("event")
+                .document(docId)
+                .delete()
+                .addOnCompleteListener(task -> {
+                    if(task.isSuccessful()){
+                        Log.d("Event Doc Delete Success", task.getException().getLocalizedMessage());
+                    }else {
+                        Log.d("Event Doc Delete Fail", task.getException().getLocalizedMessage());
+                    }
+                });
     }
 
     private void deleteCalendar(String docId) {

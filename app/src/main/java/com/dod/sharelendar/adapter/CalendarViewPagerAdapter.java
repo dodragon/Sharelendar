@@ -24,14 +24,16 @@ public class CalendarViewPagerAdapter extends RecyclerView.Adapter<CalendarViewP
     List<MonthModel> list;
     List<EventModel> eventList;
     Context context;
+    String uuid;
 
     List<Date> eventDayList;
 
-    public CalendarViewPagerAdapter(List<MonthModel> list, List<EventModel> eventList, Context context, List<Date> eventDayList) {
+    public CalendarViewPagerAdapter(List<MonthModel> list, List<EventModel> eventList, Context context, List<Date> eventDayList, String uuid) {
         this.list = list;
         this.eventList = eventList;
         this.context = context;
         this.eventDayList = eventDayList;
+        this.uuid = uuid;
     }
 
     @NonNull
@@ -47,7 +49,7 @@ public class CalendarViewPagerAdapter extends RecyclerView.Adapter<CalendarViewP
         MonthModel vo = list.get(position);
 
         RecyclerView recyclerView = holder.recyclerView;
-        CalendarAdapter adapter = new CalendarAdapter(vo.getDayList(), eventList, context, eventDayList);
+        CalendarAdapter adapter = new CalendarAdapter(vo.getDayList(), eventList, context, eventDayList, uuid);
         GridLayoutManager layoutManager = new GridLayoutManager(context.getApplicationContext(), 7);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);

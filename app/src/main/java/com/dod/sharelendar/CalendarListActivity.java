@@ -115,7 +115,6 @@ public class CalendarListActivity extends AppCompatActivity {
         wm.height=200;
 
         findViewById(R.id.add_calendar).setOnClickListener(v -> {
-            findViewById(R.id.deem).setVisibility(View.VISIBLE);
             dialog.show(getSupportFragmentManager(), MakeCalendarDialog.TAG_EVENT_DIALOG);
         });
 
@@ -130,7 +129,6 @@ public class CalendarListActivity extends AppCompatActivity {
     public void onBackPressed(){
         if(dialog.isInLayout()){
             dialog.dismiss();
-            findViewById(R.id.deem).setVisibility(View.GONE);
         }
 
         if(System.currentTimeMillis() - lastTimeBackPressed < 1500){

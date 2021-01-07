@@ -8,13 +8,13 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/app_logo"
         android:label="@string/app_name"
         android:requestLegacyExternalStorage="true"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Sharelendar">
-        <activity android:name=".UserCalendarOptionActivity"></activity>
+        <activity android:name=".EventAddActivity"></activity>
+        <activity android:name=".UserCalendarOptionActivity" />
         <activity android:name=".InviteActivity">
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />

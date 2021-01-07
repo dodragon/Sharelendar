@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -73,6 +74,17 @@ public class MakeCalendarDialog extends DialogFragment implements View.OnClickLi
         if (getArguments() != null) {
 
         }
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+
+        Window window = getDialog().getWindow();
+        WindowManager.LayoutParams windowParams = window.getAttributes();
+        windowParams.dimAmount = 0.5f;
+        windowParams.flags |= WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+        window.setAttributes(windowParams);
     }
 
     @Nullable
@@ -277,14 +289,12 @@ public class MakeCalendarDialog extends DialogFragment implements View.OnClickLi
     }
 
     public void closeDialog(){
-        ((Activity)context).findViewById(R.id.deem).setVisibility(View.GONE);
         dismiss();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        ((Activity)context).findViewById(R.id.deem).setVisibility(View.GONE);
     }
 
     private String makeUuid(String userUuid){

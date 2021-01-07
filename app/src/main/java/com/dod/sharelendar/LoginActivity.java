@@ -1,6 +1,5 @@
 package com.dod.sharelendar;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -16,13 +15,9 @@ import android.widget.Toast;
 import com.dod.sharelendar.data.UserModel;
 import com.dod.sharelendar.dialog.LoadingDialog;
 import com.dod.sharelendar.utils.Sha256;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,58 +67,55 @@ public class LoginActivity extends AppCompatActivity {
 
     private void login(String email, String password){
         mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if(task.isSuccessful()){
-                            Log.d("Login", "signInWithEmail:success");
-                            Toast.makeText(LoginActivity.this, "로그인 완료 !", Toast.LENGTH_SHORT).show();
+                .addOnCompleteListener(this, task -> {
+                    if(task.isSuccessful()){
+                        Log.d("Login", "signInWithEmail:success");
+                        Toast.makeText(LoginActivity.this, "로그인 완료 !", Toast.LENGTH_SHORT).show();
 
-                            db.collection("user")
-                                    .whereEqualTo("email", email)
-                                    .get()
-                                    .addOnCompleteListener(task1 -> {
-                                        if(task1.isSuccessful()){
-                                            List<UserModel> list = new ArrayList<>();
+                        db.collection("user")
+                                .whereEqualTo("email", email)
+                                .get()
+                                .addOnCompleteListener(task1 -> {
+                                    if(task1.isSuccessful()){
+                                        List<UserModel> list = new ArrayList<>();
 
-                                            for(QueryDocumentSnapshot document : task1.getResult()){
-                                                UserModel model = new UserModel();
-                                                model.setEmail(document.get("email").toString());
-                                                model.setPassword(document.get("password").toString());
-                                                model.setNickname(document.get("nickname").toString());
-                                                model.setProfileImg(document.get("profile_img").toString());
-                                                model.setUuid(document.get("uuid").toString());
-                                                list.add(model);
-                                            }
-
-                                            SharedPreferences spf = getSharedPreferences("user", MODE_PRIVATE);
-                                            SharedPreferences.Editor editor = spf.edit();
-
-                                            editor.putString("email", list.get(0).getEmail());
-                                            editor.putString("password", list.get(0).getPassword());
-                                            editor.putString("profileImg", list.get(0).getProfileImg());
-                                            editor.putString("nickname", list.get(0).getNickname());
-                                            editor.putString("uuid", list.get(0).getUuid());
-
-                                            editor.apply();
-
-                                            loading.dismiss();
-
-                                            Intent intent = new Intent(LoginActivity.this, CalendarListActivity.class);
-                                            startActivity(intent);
-                                            finishAffinity();
-                                        }else{
-                                            Log.d("DB SELECT ERROR", task1.getException().getLocalizedMessage());
-                                            mAuth.signOut();
-                                            loading.dismiss();
-                                            Toast.makeText(LoginActivity.this, "이메일과 비밀번호를 다시 확인 해주세요.", Toast.LENGTH_SHORT).show();
+                                        for(QueryDocumentSnapshot document : task1.getResult()){
+                                            UserModel model = new UserModel();
+                                            model.setEmail(document.get("email").toString());
+                                            model.setPassword(document.get("password").toString());
+                                            model.setNickname(document.get("nickname").toString());
+                                            model.setProfileImg(document.get("profile_img").toString());
+                                            model.setUuid(document.get("uuid").toString());
+                                            list.add(model);
                                         }
-                                    });
-                        }else{
-                            Log.d("Login", "signInWithEmail:failure", task.getException());
-                            loading.dismiss();
-                            Toast.makeText(LoginActivity.this, "이메일과 비밀번호를 다시 확인 해주세요.", Toast.LENGTH_SHORT).show();
-                        }
+
+                                        SharedPreferences spf = getSharedPreferences("user", MODE_PRIVATE);
+                                        SharedPreferences.Editor editor = spf.edit();
+
+                                        editor.putString("email", list.get(0).getEmail());
+                                        editor.putString("password", list.get(0).getPassword());
+                                        editor.putString("profileImg", list.get(0).getProfileImg());
+                                        editor.putString("nickname", list.get(0).getNickname());
+                                        editor.putString("uuid", list.get(0).getUuid());
+
+                                        editor.apply();
+
+                                        loading.dismiss();
+
+                                        Intent intent = new Intent(LoginActivity.this, CalendarListActivity.class);
+                                        startActivity(intent);
+                                        finishAffinity();
+                                    }else{
+                                        Log.d("DB SELECT ERROR", task1.getException().getLocalizedMessage());
+                                        mAuth.signOut();
+                                        loading.dismiss();
+                                        Toast.makeText(LoginActivity.this, "이메일과 비밀번호를 다시 확인 해주세요.", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    }else{
+                        Log.d("Login", "signInWithEmail:failure", task.getException());
+                        loading.dismiss();
+                        Toast.makeText(LoginActivity.this, "이메일과 비밀번호를 다시 확인 해주세요.", Toast.LENGTH_SHORT).show();
                     }
                 });
     }

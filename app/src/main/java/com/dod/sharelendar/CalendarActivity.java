@@ -5,12 +5,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,8 +18,6 @@ import com.dod.sharelendar.adapter.CalendarViewPagerAdapter;
 import com.dod.sharelendar.data.DayModel;
 import com.dod.sharelendar.data.EventModel;
 import com.dod.sharelendar.data.MonthModel;
-import com.dod.sharelendar.data.YearModel;
-import com.dod.sharelendar.dialog.EventDialog;
 import com.dod.sharelendar.dialog.LoadingDialog;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -31,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 public class CalendarActivity extends AppCompatActivity {
 
@@ -46,11 +43,20 @@ public class CalendarActivity extends AppCompatActivity {
 
     public static Date SELECT_DAY = null;
 
+    public static Context context;
+    ViewPager2 viewPager;
+
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendar);
+
+        settingDisplay();
+    }
+
+    private void settingDisplay(){
+        context = this;
 
         loading = new LoadingDialog(this);
         loading.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -68,9 +74,6 @@ public class CalendarActivity extends AppCompatActivity {
                 + (cal.get(Calendar.MONTH) + 1)
                 + "월");
 
-        ((TextView)findViewById(R.id.year)).setText(String.valueOf(cal.get(Calendar.YEAR)));
-        ((TextView)findViewById(R.id.month)).setText(String.valueOf(cal.get(Calendar.MONTH) + 1));
-        ((TextView)findViewById(R.id.day)).setText(String.valueOf(cal.get(Calendar.DAY_OF_MONTH)));
 
         findViewById(R.id.option).setOnClickListener(v -> {
             Intent intent = new Intent(CalendarActivity.this, CalendarOptionActivity.class);
@@ -80,6 +83,7 @@ public class CalendarActivity extends AppCompatActivity {
 
         db.collection("event")
                 .whereEqualTo("calendar", uuid)
+                .orderBy("makeDate")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -88,13 +92,16 @@ public class CalendarActivity extends AppCompatActivity {
                             List<EventModel> eventList = new ArrayList<>();
                             for(DocumentSnapshot document : task.getResult()){
                                 EventModel eventModel = new EventModel();
-                                eventModel.setCalendar(uuid);
+                                eventModel.setCalendar(document.getString("calendar"));
                                 eventModel.setColor(document.getString("color"));
-                                eventModel.setEventDate(document.getDate("event_date"));
-                                eventModel.setEventName(document.getString("event_name"));
-                                eventModel.setEveryYear(document.getBoolean("every_year"));
-                                eventModel.setMakeDate(document.getDate("make_date"));
-                                eventModel.setMakeUser(document.getString("make_user"));
+                                eventModel.setEventDate(document.getDate("eventDate"));
+                                eventModel.setEventName(document.getString("eventName"));
+                                eventModel.setEventComment(document.getString("eventComment"));
+                                eventModel.setContinuous(document.getBoolean("continuous"));
+                                eventModel.setMakeDate(document.getDate("makeDate"));
+                                eventModel.setMakeUser(document.getString("makeUser"));
+                                eventModel.setRepeat(document.getString("repeat"));
+                                eventModel.setEventUuid(document.getString("eventUuid"));
                                 eventList.add(eventModel);
                             }
 
@@ -108,8 +115,8 @@ public class CalendarActivity extends AppCompatActivity {
                                 }
                             }
 
-                            ViewPager2 viewPager = findViewById(R.id.viewPager);
-                            CalendarViewPagerAdapter adapter = new CalendarViewPagerAdapter(list, eventList, CalendarActivity.this, getEventDayList());
+                            viewPager = findViewById(R.id.viewPager);
+                            CalendarViewPagerAdapter adapter = new CalendarViewPagerAdapter(list, eventList, CalendarActivity.this, getEventDayList(), uuid);
                             viewPager.setAdapter(adapter);
                             viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
                             viewPager.setCurrentItem(selectPosition, false);
@@ -122,15 +129,6 @@ public class CalendarActivity extends AppCompatActivity {
                                             + "년 "
                                             + list.get(position).getMonth()
                                             + "월");
-                                }
-                            });
-
-                            findViewById(R.id.event_add).setOnClickListener(v -> {
-                                if(SELECT_DAY == null){
-                                    Toast.makeText(CalendarActivity.this, "날짜를 선택 해 주세요.", Toast.LENGTH_SHORT).show();
-                                }else {
-                                    EventDialog dialog = EventDialog.getInstance(getEventDayList(), eventList, CalendarActivity.this, SELECT_DAY);
-                                    dialog.show(getSupportFragmentManager(), "EVENT_DIALOG");
                                 }
                             });
 
@@ -253,5 +251,11 @@ public class CalendarActivity extends AppCompatActivity {
         }
 
         return korDayOfWeek;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        //settingDisplay();
     }
 }

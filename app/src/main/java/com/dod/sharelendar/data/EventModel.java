@@ -19,10 +19,19 @@ public class EventModel implements Serializable {
     private String eventComment;
     @SerializedName("make_user")
     private String makeUser;
-    @SerializedName("every_year")
-    private boolean everyYear;
+    @SerializedName("userNickname")
+    private String userNickname;
+    @SerializedName("repeat")
+    private String repeat;
     @SerializedName("make_date")
     private Date makeDate;
+    @SerializedName("event_uuid")
+    private String eventUuid;
+    @SerializedName("continuous")
+    private boolean continuous;
+
+    public EventModel() {
+    }
 
     public String getCalendar() {
         return calendar;
@@ -72,12 +81,20 @@ public class EventModel implements Serializable {
         this.makeUser = makeUser;
     }
 
-    public boolean isEveryYear() {
-        return everyYear;
+    public String getUserNickname() {
+        return userNickname;
     }
 
-    public void setEveryYear(boolean everyYear) {
-        this.everyYear = everyYear;
+    public void setUserNickname(String userNickname) {
+        this.userNickname = userNickname;
+    }
+
+    public String getRepeat() {
+        return repeat;
+    }
+
+    public void setRepeat(String repeat) {
+        this.repeat = repeat;
     }
 
     public Date getMakeDate() {
@@ -86,6 +103,22 @@ public class EventModel implements Serializable {
 
     public void setMakeDate(Date makeDate) {
         this.makeDate = makeDate;
+    }
+
+    public String getEventUuid() {
+        return eventUuid;
+    }
+
+    public void setEventUuid(String eventUuid) {
+        this.eventUuid = eventUuid;
+    }
+
+    public boolean isContinuous() {
+        return continuous;
+    }
+
+    public void setContinuous(boolean continuous) {
+        this.continuous = continuous;
     }
 
     @Override
@@ -97,8 +130,11 @@ public class EventModel implements Serializable {
                 ", eventName='" + eventName + '\'' +
                 ", eventComment='" + eventComment + '\'' +
                 ", makeUser='" + makeUser + '\'' +
-                ", everyYear=" + everyYear +
+                ", userNickname='" + userNickname + '\'' +
+                ", repeat='" + repeat + '\'' +
                 ", makeDate=" + makeDate +
+                ", eventUuid='" + eventUuid + '\'' +
+                ", continuous=" + continuous +
                 '}';
     }
 }

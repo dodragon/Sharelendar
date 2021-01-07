@@ -30,24 +30,11 @@
             android:hint="Password"
             android:importantForAutofill="no" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <CheckBox
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="auto login"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="12dp"
-                android:text="아이디/비밀번호 찾기"/>
-
-        </LinearLayout>
+            android:layout_marginTop="3dp"
+            android:text="아이디/비밀번호 찾기"/>
 
         <Button
             android:id="@+id/login"

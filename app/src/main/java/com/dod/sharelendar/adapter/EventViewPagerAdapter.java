@@ -1,55 +1,53 @@
 package com.dod.sharelendar.adapter;
 
-import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.DatePicker;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.RadioGroup;
-import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.ToggleButton;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.dod.sharelendar.CalendarOptionActivity;
+import com.dod.sharelendar.EventAddActivity;
 import com.dod.sharelendar.R;
 import com.dod.sharelendar.data.EventModel;
+import com.dod.sharelendar.dialog.LoadingDialog;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
-
-import de.hdodenhof.circleimageview.CircleImageView;
-import petrov.kristiyan.colorpicker.ColorPicker;
 
 public class EventViewPagerAdapter extends RecyclerView.Adapter<EventViewPagerAdapter.ViewHolder> {
 
     List<Date> dateList;
     DialogFragment dialog;
     List<EventModel> eventList;
+    String calUuid;
     Context context;
 
-    ColorPicker colorPicker;
-    int selectColor = 0;
+    SimpleDateFormat format;
 
-    public EventViewPagerAdapter(List<Date> dateList, DialogFragment dialog, List<EventModel> eventList, Context context) {
+    public EventViewPagerAdapter(List<Date> dateList, DialogFragment dialog,
+                                 List<EventModel> eventList, Context context,
+                                 String calUuid) {
         this.dateList = dateList;
         this.dialog = dialog;
         this.eventList = eventList;
         this.context = context;
+        this.calUuid = calUuid;
 
-        colorPicker = new ColorPicker((Activity) context);
+        format = new SimpleDateFormat("yyyyMMdd");
     }
 
     @NonNull
@@ -70,72 +68,73 @@ public class EventViewPagerAdapter extends RecyclerView.Adapter<EventViewPagerAd
 
         holder.close.setOnClickListener(v -> dialog.dismiss());
 
-        selectColor = Color.parseColor(randomColor());
-        holder.colorImg.setBackgroundColor(selectColor);
-        holder.colorImg.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(colorPicker.getDialogViewLayout().getParent() != null){
-                    ((ViewGroup)colorPicker.getDialogViewLayout().getParent()).removeView(colorPicker.getDialogViewLayout());
-                }
-
-                colorPicker.setColors(getColors())
-                        .setColumns(4)
-                        .setRoundColorButton(true)
-                        .setColorButtonTickColor(Color.LTGRAY)
-                        .setTitle("색상을 선택 긔긔")
-                        .setOnChooseColorListener(new ColorPicker.OnChooseColorListener() {
-                            @Override
-                            public void onChooseColor(int position1, int color) {
-                                holder.colorImg.setColorFilter(color);
-                                selectColor = color;
-                            }
-
-                            @Override
-                            public void onCancel() {
-                                colorPicker.dismissDialog();
-                            }
-                        }).show();
-            }
+        holder.eventAdd.setOnClickListener(v -> {
+            Intent intent = new Intent(context, EventAddActivity.class);
+            intent.putExtra("year", getYear(date));
+            intent.putExtra("month", getMonth(date));
+            intent.putExtra("day", getDay(date));
+            intent.putExtra("date", format.format(date));
+            intent.putExtra("uuid", calUuid);
+            context.startActivity(intent);
         });
 
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-
-        int year = Integer.parseInt(getYear(date));
-        int month = Integer.parseInt(getMonth(date));
-        int day = Integer.parseInt(getDay(date));
-
-        holder.datePicker.setMinDate(date.getTime());
-        holder.datePicker.init(year, month-1, day, null);
-
         if(eventList.isEmpty()){
-            holder.toggle.setVisibility(View.GONE);
-            holder.listLayout.setVisibility(View.GONE);
-            holder.addLayout.setVisibility(View.VISIBLE);
-            holder.save.setVisibility(View.VISIBLE);
+            holder.recyclerView.setVisibility(View.GONE);
+            holder.empty.setVisibility(View.VISIBLE);
         }else {
-            holder.toggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if(isChecked){
-                    holder.addLayout.setVisibility(View.GONE);
-                    holder.save.setVisibility(View.GONE);
-                    holder.listLayout.setVisibility(View.VISIBLE);
-                }else {
-                    holder.addLayout.setVisibility(View.VISIBLE);
-                    holder.save.setVisibility(View.VISIBLE);
-                    holder.listLayout.setVisibility(View.GONE);
-                }
-            });
+            holder.recyclerView.setVisibility(View.VISIBLE);
+            holder.empty.setVisibility(View.GONE);
 
-            //TODO: list Recycler 추가
+            RecyclerView recyclerView = holder.recyclerView;
+            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+            EventListAdapter adapter = new EventListAdapter(sortEventList(getOneDayList(date)), context);
+            recyclerView.setAdapter(adapter);
         }
-
-        //TODO: Save 활성
     }
 
     @Override
     public int getItemCount() {
         return dateList.size();
+    }
+
+    private List<EventModel> getOneDayList(Date thisDay){
+        List<EventModel> newList = new ArrayList<>();
+
+        for(int i=0;i<eventList.size();i++){
+            if(isSameDate(thisDay, eventList.get(i).getEventDate())){
+                newList.add(eventList.get(i));
+            }
+        }
+
+        return newList;
+    }
+
+    private boolean isSameDate(Date date1, Date date2){
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+        if(format.format(date1).equals(format.format(date2))){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+    private List<EventModel> sortEventList(List<EventModel> list){
+        List<EventModel> newList = new ArrayList<>();
+        List<EventModel> con = new ArrayList<>();
+        List<EventModel> nCon = new ArrayList<>();
+
+        for(int i=0;i<list.size();i++){
+            if(list.get(i).isContinuous()){
+                con.add(list.get(i));
+            }else {
+                nCon.add(list.get(i));
+            }
+        }
+
+        newList.addAll(con);
+        newList.addAll(nCon);
+
+        return newList;
     }
 
     private String getYear(Date date){
@@ -150,28 +149,6 @@ public class EventViewPagerAdapter extends RecyclerView.Adapter<EventViewPagerAd
         return new SimpleDateFormat("dd").format(date);
     }
 
-    private String randomColor(){
-        return getColors().get(new Random().nextInt(getColors().size()));
-    }
-
-    private ArrayList<String> getColors(){
-        ArrayList<String> colors = new ArrayList<>();
-
-        colors.add("#c1db2a");
-        colors.add("#f4d53d");
-        colors.add("#fc9d35");
-        colors.add("#e55151");
-        colors.add("#55bf55");
-        colors.add("#1ead68");
-        colors.add("#46d1bd");
-        colors.add("#5a94f2");
-        colors.add("#45cfff");
-        colors.add("#4b7fe8");
-        colors.add("#ed85a0");
-        colors.add("#a275d8");
-
-        return colors;
-    }
 
     class ViewHolder extends RecyclerView.ViewHolder{
 
@@ -180,22 +157,13 @@ public class EventViewPagerAdapter extends RecyclerView.Adapter<EventViewPagerAd
         TextView month;
         TextView day;
         Button close;
-        ToggleButton toggle;
 
         //list
         RecyclerView recyclerView;
+        TextView empty;
 
-        //add
-        EditText eventName;
-        CircleImageView colorImg;
-        DatePicker datePicker;
-        RadioGroup patternPicker;
-        EditText comment;
-        Button save;
-
-        //layout
-        LinearLayout listLayout;
-        ScrollView addLayout;
+        //btn
+        Button eventAdd;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -205,22 +173,13 @@ public class EventViewPagerAdapter extends RecyclerView.Adapter<EventViewPagerAd
             month = itemView.findViewById(R.id.month);
             day = itemView.findViewById(R.id.day);
             close = itemView.findViewById(R.id.close_btn);
-            toggle = itemView.findViewById(R.id.toggle);
 
             //list
             recyclerView = itemView.findViewById(R.id.recycler);
+            empty = itemView.findViewById(R.id.empty_text);
 
-            //add
-            eventName = itemView.findViewById(R.id.event_name);
-            colorImg = itemView.findViewById(R.id.color_img);
-            datePicker = itemView.findViewById(R.id.date_picker);
-            patternPicker = itemView.findViewById(R.id.pattern_picker);
-            comment = itemView.findViewById(R.id.comment);
-            save = itemView.findViewById(R.id.save_btn);
-
-            //layout
-            listLayout = itemView.findViewById(R.id.event_list_layout);
-            addLayout = itemView.findViewById(R.id.event_add_layout);
+            //btn
+            eventAdd = itemView.findViewById(R.id.event_add);
         }
     }
 }
