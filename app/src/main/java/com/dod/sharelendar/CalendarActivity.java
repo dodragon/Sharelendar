@@ -252,10 +252,4 @@ public class CalendarActivity extends AppCompatActivity {
 
         return korDayOfWeek;
     }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        //settingDisplay();
-    }
 }

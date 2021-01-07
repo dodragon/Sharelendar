@@ -4,14 +4,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -19,7 +17,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.dod.sharelendar.data.UserCalendar;
 import com.dod.sharelendar.data.UserModel;
 import com.dod.sharelendar.dialog.LoadingDialog;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -96,9 +93,10 @@ public class UserCalendarOptionActivity extends AppCompatActivity {
             radioButton.setChecked(true);
         }else {
             findViewById(R.id.checkLayout).setVisibility(View.GONE);
+            findViewById(R.id.kick_btn).setVisibility(View.GONE);
         }
 
-        if(!thisUserDiv.equals("host")){
+        if(!thisUserDiv.equals("host")) {
             findViewById(R.id.admin_check).setEnabled(false);
             findViewById(R.id.normal_check).setEnabled(false);
         }

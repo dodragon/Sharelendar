@@ -195,16 +195,13 @@ public class CalendarOptionActivity extends AppCompatActivity {
         db.collection("event")
                 .whereEqualTo("calendar", calUuid)
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if(task.isSuccessful()){
-                            for(DocumentSnapshot document : task.getResult()){
-                                deleteEvent(document.getId());
-                            }
-                        }else {
-                            Log.d("Event Doc Select Fail", task.getException().getLocalizedMessage());
+                .addOnCompleteListener(task -> {
+                    if(task.isSuccessful()){
+                        for(DocumentSnapshot document : task.getResult()){
+                            deleteEvent(document.getId());
                         }
+                    }else {
+                        Log.d("Event Doc Select Fail", task.getException().getLocalizedMessage());
                     }
                 });
     }
@@ -214,16 +211,13 @@ public class CalendarOptionActivity extends AppCompatActivity {
                 .whereEqualTo("calendar", calUuid)
                 .whereEqualTo("email", email)
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if(task.isSuccessful()){
-                            for(DocumentSnapshot document : task.getResult()){
-                                deleteEvent(document.getId());
-                            }
-                        }else {
-                            Log.d("Event Doc Select Fail", task.getException().getLocalizedMessage());
+                .addOnCompleteListener(task -> {
+                    if(task.isSuccessful()){
+                        for(DocumentSnapshot document : task.getResult()){
+                            deleteEvent(document.getId());
                         }
+                    }else {
+                        Log.d("Event Doc Select Fail", task.getException().getLocalizedMessage());
                     }
                 });
     }
