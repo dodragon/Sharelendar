@@ -5,8 +5,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -32,7 +35,12 @@ public class JoinActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_join);
 
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         db = FirebaseFirestore.getInstance();
+
+        ((EditText)findViewById(R.id.email)).addTextChangedListener(watcher);
+        ((EditText)findViewById(R.id.password)).addTextChangedListener(passwordWatcher);
+        ((EditText)findViewById(R.id.password_check)).addTextChangedListener(passwordCheckWatcher);
 
         findViewById(R.id.go_profile).setOnClickListener(v -> {
             String email = ((EditText)findViewById(R.id.email)).getText().toString();
@@ -49,7 +57,73 @@ public class JoinActivity extends AppCompatActivity {
                 duplicateEmail(email, password);
             }
         });
+
+        findViewById(R.id.back).setOnClickListener(v -> finish());
     }
+
+    TextWatcher watcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            if(isValidEmail(s.toString())){
+                findViewById(R.id.email_check).setVisibility(View.GONE);
+            }else {
+                findViewById(R.id.email_check).setVisibility(View.VISIBLE);
+            }
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+
+        }
+    };
+
+    TextWatcher passwordWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            if(isValidPassword(s.toString())){
+                findViewById(R.id.pw_check).setVisibility(View.GONE);
+            }else {
+                findViewById(R.id.pw_check).setVisibility(View.VISIBLE);
+            }
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+
+        }
+    };
+
+    TextWatcher passwordCheckWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            String pw =((EditText)findViewById(R.id.password)).getText().toString();
+            if(s.toString().equals(pw)){
+                findViewById(R.id.pw_check_check).setVisibility(View.GONE);
+            }else {
+                findViewById(R.id.pw_check_check).setVisibility(View.VISIBLE);
+            }
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+
+        }
+    };
 
     public static boolean isValidEmail(String email) {
         boolean err = false;
@@ -93,10 +167,9 @@ public class JoinActivity extends AppCompatActivity {
 
                             if(list.isEmpty()){
                                 Sha256 sha = new Sha256();
-                                Intent intent = new Intent(JoinActivity.this, ProfileActivity.class);
+                                Intent intent = new Intent(JoinActivity.this, SettingProfileActivity.class);
                                 intent.putExtra("email", email);
                                 intent.putExtra("password", sha.encrypt(password));
-                                intent.putExtra("profileDiv", "join");
                                 startActivity(intent);
                             }else {
                                 Toast.makeText(JoinActivity.this, "중복된 이메일 계정이 존재합니다.", Toast.LENGTH_SHORT).show();

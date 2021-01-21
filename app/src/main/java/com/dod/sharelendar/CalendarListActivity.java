@@ -89,17 +89,22 @@ public class CalendarListActivity extends AppCompatActivity {
                                         }
 
                                         RecyclerView recyclerView = findViewById(R.id.recycler);
-                                        recyclerView.setLayoutManager(new LinearLayoutManager(CalendarListActivity.this));
-                                        CalendarListAdapter adapter = new CalendarListAdapter(calendarList, CalendarListActivity.this);
-                                        recyclerView.setAdapter(adapter);
-
-                                        loading.dismiss();
+                                        if(calendarList.size() == 0){
+                                            recyclerView.setVisibility(View.GONE);
+                                            findViewById(R.id.none_cal).setVisibility(View.VISIBLE);
+                                        }else {
+                                            recyclerView.setVisibility(View.VISIBLE);
+                                            findViewById(R.id.none_cal).setVisibility(View.GONE);
+                                            recyclerView.setLayoutManager(new LinearLayoutManager(CalendarListActivity.this));
+                                            CalendarListAdapter adapter = new CalendarListAdapter(calendarList, CalendarListActivity.this);
+                                            recyclerView.setAdapter(adapter);
+                                        }
                                     }else {
                                         Toast.makeText(CalendarListActivity.this,
                                                 "캘린더 리스트 생성 실패!", Toast.LENGTH_SHORT).show();
                                         Log.d("CALENDAR_SELECT", task1.getException().getLocalizedMessage());
-                                        loading.dismiss();
                                     }
+                                    loading.dismiss();
                                 });
                     }else {
                         Toast.makeText(CalendarListActivity.this,

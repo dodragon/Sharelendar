@@ -89,22 +89,28 @@ public class LoginActivity extends AppCompatActivity {
                                             list.add(model);
                                         }
 
-                                        SharedPreferences spf = getSharedPreferences("user", MODE_PRIVATE);
-                                        SharedPreferences.Editor editor = spf.edit();
+                                        try{
+                                            SharedPreferences spf = getSharedPreferences("user", MODE_PRIVATE);
+                                            SharedPreferences.Editor editor = spf.edit();
 
-                                        editor.putString("email", list.get(0).getEmail());
-                                        editor.putString("password", list.get(0).getPassword());
-                                        editor.putString("profileImg", list.get(0).getProfileImg());
-                                        editor.putString("nickname", list.get(0).getNickname());
-                                        editor.putString("uuid", list.get(0).getUuid());
+                                            editor.putString("email", list.get(0).getEmail());
+                                            editor.putString("password", list.get(0).getPassword());
+                                            editor.putString("profileImg", list.get(0).getProfileImg());
+                                            editor.putString("nickname", list.get(0).getNickname());
+                                            editor.putString("uuid", list.get(0).getUuid());
 
-                                        editor.apply();
+                                            editor.apply();
 
-                                        loading.dismiss();
+                                            loading.dismiss();
 
-                                        Intent intent = new Intent(LoginActivity.this, CalendarListActivity.class);
-                                        startActivity(intent);
-                                        finishAffinity();
+                                            Intent intent = new Intent(LoginActivity.this, CalendarListActivity.class);
+                                            startActivity(intent);
+                                            finishAffinity();
+                                        }catch (Exception e){
+                                            e.printStackTrace();
+                                            Toast.makeText(this
+                                                    , "등록된 회원이 아닙니다.", Toast.LENGTH_SHORT).show();
+                                        }
                                     }else{
                                         Log.d("DB SELECT ERROR", task1.getException().getLocalizedMessage());
                                         mAuth.signOut();

@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -63,6 +64,8 @@ public class CalendarActivity extends AppCompatActivity {
         loading.setCancelable(false);
         loading.setCanceledOnTouchOutside(false);
         loading.show();
+
+        ((TextView)findViewById(R.id.cal_name)).setText(getIntent().getStringExtra("calName"));
 
         db = FirebaseFirestore.getInstance();
 

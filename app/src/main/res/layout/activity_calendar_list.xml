@@ -26,7 +26,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="64dp"
-                    android:background="@color/point_color"
+                    android:background="@color/black"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingHorizontal="15dp">
@@ -38,6 +38,7 @@
                         android:layout_alignParentEnd="true"
                         android:layout_alignParentBottom="true"
                         android:background="@color/point_color"
+                        android:visibility="gone"
                         android:text="≡" />
 
                     <View
@@ -45,14 +46,11 @@
                         android:layout_height="0dp"
                         android:layout_weight="1" />
 
-                    <Button
+                    <ImageView
                         android:id="@+id/profile"
-                        android:layout_width="50dp"
-                        android:layout_height="50dp"
-                        android:layout_alignParentEnd="true"
-                        android:layout_alignParentBottom="true"
-                        android:background="@color/point_color"
-                        android:text="ㅅ" />
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/ic_profile" />
 
                 </LinearLayout>
 
@@ -68,25 +66,34 @@
 
                         <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent">
+                            android:layout_height="match_parent"
+                            android:orientation="vertical">
 
                             <androidx.recyclerview.widget.RecyclerView
                                 android:id="@+id/recycler"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content" />
 
+                            <TextView
+                                android:id="@+id/none_cal"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:textColor="@color/black"
+                                android:textSize="24sp"
+                                android:text="아직 캘린더가 없군요!\n\n캘린더를 만들어 보세요!"/>
+
                         </LinearLayout>
 
                     </androidx.core.widget.NestedScrollView>
-                    <Button
+                    <ImageView
                         android:id="@+id/add_calendar"
                         android:layout_width="50dp"
                         android:layout_height="50dp"
                         android:layout_alignParentEnd="true"
                         android:layout_alignParentBottom="true"
                         android:layout_margin="15dp"
-                        android:background="@color/point_color"
-                        android:text="+" />
+                        android:background="@drawable/add" />
 
                 </RelativeLayout>
             </LinearLayout>

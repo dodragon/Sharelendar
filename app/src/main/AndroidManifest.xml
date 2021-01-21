@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.dod.sharelendar">
 
@@ -13,7 +14,22 @@
         android:requestLegacyExternalStorage="true"
         android:supportsRtl="true"
         android:theme="@style/Theme.Sharelendar">
-        <activity android:name=".EventAddActivity"></activity>
+
+        <activity
+            android:name=".SettingProfileActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:launchMode="singleInstance"/>
+
+        <meta-data
+            android:name="firebase_performance_logcat_enabled"
+            android:value="true" />
+
+        <activity
+            android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:theme="@style/Base.Theme.AppCompat"
+            android:launchMode="singleInstance"/>
+        <activity android:name=".EventAddActivity"
+            android:windowSoftInputMode="adjustResize"/>
         <activity android:name=".UserCalendarOptionActivity" />
         <activity android:name=".InviteActivity">
             <intent-filter android:autoVerify="true">
@@ -28,11 +44,19 @@
             </intent-filter>
         </activity>
         <activity android:name=".CalendarOptionActivity" />
-        <activity android:name=".ProfileActivity" />
-        <activity android:name=".JoinActivity" />
+        <activity
+            android:name=".ProfileActivity"
+            android:windowSoftInputMode="adjustResize"/>
+        <activity
+            android:name=".JoinActivity"
+            android:windowSoftInputMode="adjustResize"/>
         <activity android:name=".CalendarActivity" />
-        <activity android:name=".CalendarListActivity" />
-        <activity android:name=".LoginActivity" />
+        <activity android:name=".CalendarListActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:launchMode="singleTop"/>
+        <activity
+            android:name=".LoginActivity"
+            android:windowSoftInputMode="adjustResize"/>
         <activity android:name=".SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

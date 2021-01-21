@@ -4,49 +4,106 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     tools:context=".LoginActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical">
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:paddingHorizontal="30dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="bottom"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:lineHeight="36dp"
+                android:text="로그인 후\n우리만의 일정을 써봐요"
+                android:textColor="@color/black"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:layout_width="26dp"
+                android:layout_height="36dp"
+                android:layout_marginLeft="5dp"
+                android:src="@drawable/pen"/>
+
+        </LinearLayout>
 
         <EditText
             android:id="@+id/email"
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="52dp"
+            android:gravity="top"
+            android:autofillHints="Email/Id"
+            android:hint="이메일을 입력해주세요"
             android:inputType="textWebEmailAddress"
             android:maxLines="1"
-            android:hint="Email/Id"
-            android:autofillHints="Email/Id" />
+            android:textColorHint="@color/gray"
+            android:textColor="@color/black"
+            android:textSize="16sp" />
 
         <EditText
             android:id="@+id/password"
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="32dp"
+            android:gravity="top"
+            android:hint="비밀번호를 입력해주세요"
+            android:importantForAutofill="no"
             android:inputType="textWebPassword"
             android:maxLines="1"
-            android:hint="Password"
-            android:importantForAutofill="no" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
-            android:text="아이디/비밀번호 찾기"/>
+            android:textColorHint="@color/gray"
+            android:textColor="@color/black"
+            android:textSize="16sp" />
 
         <Button
             android:id="@+id/login"
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
-            android:text="Login"/>
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="60dp"
+            android:background="@drawable/black_radius4"
+            android:text="로그인"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/go_join"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Join"/>
+            android:layout_marginTop="18dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/go_join"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:text="회원가입" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:textSize="14sp"
+                android:textColor="#999999"
+                android:text="아이디/비밀번호 찾기" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

@@ -68,6 +68,7 @@ public class CalendarListAdapter extends RecyclerView.Adapter<CalendarListAdapte
         holder.layout.setOnClickListener((View.OnClickListener) v -> {
             Intent intent = new Intent(context, CalendarActivity.class);
             intent.putExtra("uuid", vo.getUuid());
+            intent.putExtra("calName", vo.getCalendarName());
             ((Activity)context).startActivity(intent);
         });
     }

@@ -38,7 +38,7 @@
                             android:layout_height="wrap_content"
                             android:text="2020"
                             android:textAlignment="center"
-                            android:textColor="@color/point_color"
+                            android:textColor="@color/black"
                             android:textSize="28sp"
                             android:textStyle="bold" />
 
@@ -59,7 +59,7 @@
                             android:layout_marginLeft="8dp"
                             android:text="12"
                             android:textAlignment="center"
-                            android:textColor="@color/point_color"
+                            android:textColor="@color/black"
                             android:textSize="28sp"
                             android:textStyle="bold" />
 
@@ -80,7 +80,7 @@
                             android:layout_marginLeft="8dp"
                             android:text="31"
                             android:textAlignment="center"
-                            android:textColor="@color/point_color"
+                            android:textColor="@color/black"
                             android:textSize="28sp"
                             android:textStyle="bold" />
 
