@@ -24,6 +24,11 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.loader.content.CursorLoader;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.MultiTransformation;
+import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
 import com.dod.sharelendar.CalendarListActivity;
 import com.dod.sharelendar.R;
 import com.dod.sharelendar.data.CalendarModel;
@@ -199,7 +204,7 @@ public class MakeCalendarDialog extends DialogFragment implements View.OnClickLi
                         db.collection("calendar")
                                 .add(calendarMAp)
                                 .addOnSuccessListener(documentReference -> {
-                                    userCalendarInsert(makeUserCalendarVo(vo.getUuid(), "host", vo.getHost()), documentReference.getPath());
+                                    userCalendarInsert(makeUserCalendarVo(vo.getUuid(), "host", vo.getHost()), documentReference.getPath(), vo);
                                 })
                                 .addOnFailureListener(e -> {
                                     Toast.makeText(context, "켈린더 생성 실패! 다시 시도해 주세요.", Toast.LENGTH_SHORT).show();
@@ -215,7 +220,7 @@ public class MakeCalendarDialog extends DialogFragment implements View.OnClickLi
                 });
     }
 
-    private void userCalendarInsert(UserCalendar vo, String path){
+    private void userCalendarInsert(UserCalendar vo, String path, CalendarModel cvo){
         Map<String, Object> userCalendarMap = new HashMap<>();
         userCalendarMap.put("calendar_uuid", vo.getCalendarUuid());
         userCalendarMap.put("div", vo.getDiv());
@@ -226,12 +231,10 @@ public class MakeCalendarDialog extends DialogFragment implements View.OnClickLi
                 .add(userCalendarMap)
                 .addOnSuccessListener(documentReference -> {
                     Toast.makeText(context, "캘린더가 생성되었습니다.", Toast.LENGTH_SHORT).show();
-                    closeDialog();
-
-                    Intent intent = new Intent(context, CalendarListActivity.class);
+                    ((CalendarListActivity)CalendarListActivity.context).calendarList.add(cvo);
+                    ((CalendarListActivity)CalendarListActivity.context).recyclerView.getAdapter().notifyItemInserted(((CalendarListActivity)CalendarListActivity.context).calendarList.size() - 1);
                     loading.dismiss();
-                    getActivity().startActivity(intent);
-                    getActivity().finishAffinity();
+                    closeDialog();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(context, "켈린더 생성 실패! 다시 시도해 주세요.", Toast.LENGTH_SHORT).show();
@@ -262,7 +265,14 @@ public class MakeCalendarDialog extends DialogFragment implements View.OnClickLi
         switch (requestCode) {
             case 1000:
                 try{
-                    imageView.setImageURI(data.getData());
+                    MultiTransformation option = new MultiTransformation(new CenterCrop(), new RoundedCorners(16));
+
+                    Glide.with(this)
+                            .load(data.getData())
+                            .override(200, 180)
+                            .apply(RequestOptions.bitmapTransform(option))
+                            .into(imageView);
+
                     imagePath = getPath(data.getData());
                     break;
                 }catch (Exception e){

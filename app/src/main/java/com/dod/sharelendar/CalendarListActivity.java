@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -31,7 +32,7 @@ import java.util.Objects;
 
 public class CalendarListActivity extends AppCompatActivity {
 
-    private List<CalendarModel> calendarList;
+    public List<CalendarModel> calendarList;
     private long lastTimeBackPressed;
 
     MakeCalendarDialog dialog;
@@ -40,10 +41,26 @@ public class CalendarListActivity extends AppCompatActivity {
 
     LoadingDialog loading;
 
+    public static Context context;
+    public RecyclerView recyclerView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendar_list);
+
+
+    }
+
+    @Override
+    public void onRestart() {
+        super.onRestart();
+
+        settingDisplay();
+    }
+
+    private void settingDisplay(){
+        context = this;
 
         loading = new LoadingDialog(this);
         loading.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -88,7 +105,7 @@ public class CalendarListActivity extends AppCompatActivity {
                                             }
                                         }
 
-                                        RecyclerView recyclerView = findViewById(R.id.recycler);
+                                        recyclerView = findViewById(R.id.recycler);
                                         if(calendarList.size() == 0){
                                             recyclerView.setVisibility(View.GONE);
                                             findViewById(R.id.none_cal).setVisibility(View.VISIBLE);

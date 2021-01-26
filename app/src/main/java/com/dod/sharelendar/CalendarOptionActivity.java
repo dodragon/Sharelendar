@@ -13,9 +13,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.dod.sharelendar.adapter.CalendarUserAdapter;
@@ -27,6 +30,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,6 +44,7 @@ public class CalendarOptionActivity extends AppCompatActivity {
     String uuid;
 
     LoadingDialog loading;
+
 
     public static Context CONTEXT;
 
@@ -57,6 +63,9 @@ public class CalendarOptionActivity extends AppCompatActivity {
         loading.setCancelable(false);
         loading.setCanceledOnTouchOutside(false);
         loading.show();
+
+        ((ImageView)findViewById(R.id.option)).setColorFilter(Color.parseColor("#ffffff")
+                , PorterDuff.Mode.SRC_IN);
 
         db = FirebaseFirestore.getInstance();
         uuid = getIntent().getStringExtra("uuid");
@@ -88,10 +97,6 @@ public class CalendarOptionActivity extends AppCompatActivity {
 
         setInviteLinkBtn();
         findViewById(R.id.exit_cal).setOnClickListener(v -> {
-            LoadingDialog loading = new LoadingDialog(this);
-            loading.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            loading.setCancelable(false);
-            loading.setCanceledOnTouchOutside(false);
             loading.show();
 
             SharedPreferences spf = getSharedPreferences("user", MODE_PRIVATE);
@@ -132,7 +137,7 @@ public class CalendarOptionActivity extends AppCompatActivity {
                                                                             .addOnCompleteListener(task11 -> {
                                                                                 if (task11.isSuccessful()) {
                                                                                     for (DocumentSnapshot document1 : task11.getResult()) {
-                                                                                        deleteCalendar(document1.getId());
+                                                                                        deleteCalendar(document1.getId(), document1.get("calendar_img").toString());
                                                                                     }
                                                                                     deleteAllEvent(uuid);
                                                                                 } else {
@@ -147,6 +152,7 @@ public class CalendarOptionActivity extends AppCompatActivity {
                                                                     loading.dismiss();
                                                                 }
                                                             });
+                                                    dialog.cancel();
                                                 }
                                             });
                                 } else {
@@ -184,6 +190,15 @@ public class CalendarOptionActivity extends AppCompatActivity {
                             loading.dismiss();
                         }
                     });
+        });
+
+        findViewById(R.id.option).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(CalendarOptionActivity.this, CalendarProfileActivity.class);
+                intent.putExtra("uuid", uuid);
+                startActivity(intent);
+            }
         });
 
         if(loading.isShowing()){
@@ -228,30 +243,40 @@ public class CalendarOptionActivity extends AppCompatActivity {
                 .delete()
                 .addOnCompleteListener(task -> {
                     if(task.isSuccessful()){
-                        Log.d("Event Doc Delete Success", task.getException().getLocalizedMessage());
+                        Log.d("Event Doc Delete Success", "SUCCESS");
                     }else {
                         Log.d("Event Doc Delete Fail", task.getException().getLocalizedMessage());
                     }
                 });
     }
 
-    private void deleteCalendar(String docId) {
+    private void deleteCalendar(String docId, String image) {
         db.collection("calendar")
                 .document(docId)
                 .delete()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
+                        deleteImage(image);
+
                         Toast.makeText(CalendarOptionActivity.this, "캘린더 삭제가 완료되었습니다.", Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(CalendarOptionActivity.this, CalendarListActivity.class);
                         startActivity(intent);
                         loading.dismiss();
-                        finish();
+                        finishAffinity();
                     } else {
                         Toast.makeText(CalendarOptionActivity.this, "캘린더 삭제에 실패했습니다.", Toast.LENGTH_SHORT).show();
                         Log.d("calendar_delete_db", task.getException().getLocalizedMessage());
                         loading.dismiss();
                     }
                 });
+    }
+
+    private void deleteImage(String image) {
+        FirebaseStorage storageDelete = FirebaseStorage.getInstance();
+        StorageReference storageRefDelete = storageDelete.getReference();
+
+        StorageReference refDelete = storageRefDelete.child(image);
+        refDelete.delete();
     }
 
     private void deleteUserCalendar(String docId, boolean isOne) {
@@ -265,7 +290,7 @@ public class CalendarOptionActivity extends AppCompatActivity {
                             Toast.makeText(CalendarOptionActivity.this, "캘린더 나가기 완료!", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(CalendarOptionActivity.this, CalendarListActivity.class);
                             startActivity(intent);
-                            finish();
+                            finishAffinity();
                         } else {
                             Log.d("캘린더 삭제", docId + ">> 완료");
                         }

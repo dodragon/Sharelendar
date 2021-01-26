@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.dod.sharelendar">
 
@@ -14,11 +13,12 @@
         android:requestLegacyExternalStorage="true"
         android:supportsRtl="true"
         android:theme="@style/Theme.Sharelendar">
-
+        <activity android:name=".CalendarProfileActivity"></activity>
+        <activity android:name=".EventUpdateActivity" />
         <activity
             android:name=".SettingProfileActivity"
-            android:windowSoftInputMode="adjustResize"
-            android:launchMode="singleInstance"/>
+            android:launchMode="singleInstance"
+            android:windowSoftInputMode="adjustResize" />
 
         <meta-data
             android:name="firebase_performance_logcat_enabled"
@@ -26,10 +26,10 @@
 
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
-            android:theme="@style/Base.Theme.AppCompat"
-            android:launchMode="singleInstance"/>
-        <activity android:name=".EventAddActivity"
-            android:windowSoftInputMode="adjustResize"/>
+            android:theme="@style/Base.Theme.AppCompat" />
+        <activity
+            android:name=".EventAddActivity"
+            android:windowSoftInputMode="adjustResize" />
         <activity android:name=".UserCalendarOptionActivity" />
         <activity android:name=".InviteActivity">
             <intent-filter android:autoVerify="true">
@@ -46,17 +46,18 @@
         <activity android:name=".CalendarOptionActivity" />
         <activity
             android:name=".ProfileActivity"
-            android:windowSoftInputMode="adjustResize"/>
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".JoinActivity"
-            android:windowSoftInputMode="adjustResize"/>
+            android:windowSoftInputMode="adjustResize" />
         <activity android:name=".CalendarActivity" />
-        <activity android:name=".CalendarListActivity"
-            android:windowSoftInputMode="adjustResize"
-            android:launchMode="singleTop"/>
+        <activity
+            android:name=".CalendarListActivity"
+            android:launchMode="singleTop"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".LoginActivity"
-            android:windowSoftInputMode="adjustResize"/>
+            android:windowSoftInputMode="adjustResize" />
         <activity android:name=".SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -1,6 +1,7 @@
 package com.dod.sharelendar.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.dod.sharelendar.EventUpdateActivity;
 import com.dod.sharelendar.R;
 import com.dod.sharelendar.data.EventModel;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -42,11 +44,10 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.View
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         EventModel vo = list.get(position);
 
-        holder.layout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //TODO: 수정 페이지(권한 확인 및 자기껀지 확인)
-            }
+        holder.layout.setOnClickListener(v -> {
+            Intent intent = new Intent(context, EventUpdateActivity.class);
+            intent.putExtra("vo", vo);
+            context.startActivity(intent);
         });
 
         holder.color.setBackgroundColor(Color.parseColor(vo.getColor()));

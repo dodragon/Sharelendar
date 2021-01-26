@@ -1,6 +1,7 @@
 package com.dod.sharelendar;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -11,6 +12,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,6 +55,12 @@ public class CalendarActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendar);
 
+        settingDisplay();
+    }
+
+    @Override
+    public void onRestart() {
+        super.onRestart();
         settingDisplay();
     }
 
@@ -135,13 +143,12 @@ public class CalendarActivity extends AppCompatActivity {
                                 }
                             });
 
-                            loading.dismiss();
                         }else {
                             Log.d("캘린더 생성", task.getException().getLocalizedMessage());
                             Toast.makeText(CalendarActivity.this, "캘린더 조회 실패 !", Toast.LENGTH_SHORT).show();
                             finish();
-                            loading.dismiss();
                         }
+                        loading.dismiss();
                     }
                 });
     }

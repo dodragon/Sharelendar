@@ -52,7 +52,8 @@ public class ProfileActivity extends AppCompatActivity {
 
     ImageView imageView;
     Uri imageUri;
-    String profileImg;
+    String profileImg = "";
+    String afterImg;
     EditText nicknameEt;
 
     String deleteImagePath = "";
@@ -61,6 +62,8 @@ public class ProfileActivity extends AppCompatActivity {
     private String endUrl = "?alt=media";
 
     LoadingDialog loading;
+
+    CropImage.ActivityBuilder cropBuilder;
 
     private static final int IMAGE_SELECT = 1000;
 
@@ -78,18 +81,18 @@ public class ProfileActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         SharedPreferences spf = getSharedPreferences("user", MODE_PRIVATE);
-        profileImg = spf.getString("profileImg", "");
+        afterImg = spf.getString("profileImg", "");
         String nickname = spf.getString("nickname", "");
 
         imageView = findViewById(R.id.image);
         nicknameEt = findViewById(R.id.nickname);
 
         try {
-            if(profileImg.equals("")){
+            if(afterImg.equals("")){
                 imageView.setImageDrawable(getDrawable(R.drawable.profile));
             }else {
                 Glide.with(getApplicationContext())
-                        .load(url + urlEncoding(profileImg) + endUrl)
+                        .load(url + urlEncoding(afterImg) + endUrl)
                         .override(250, 250)
                         .centerCrop()
                         .into(imageView);
@@ -136,13 +139,13 @@ public class ProfileActivity extends AppCompatActivity {
     View.OnClickListener imgDelete = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            deleteImagePath = profileImg;
-            profileImg = "";
+            deleteImagePath = afterImg;
             imageView.setImageDrawable(getDrawable(R.drawable.profile));
         }
     };
 
     private void saveImg(String newNickname, String email, SharedPreferences.Editor editor, LoadingDialog loading) {
+        Log.d("프로필 이미지", profileImg);
         if (!profileImg.equals("")) {
             FirebaseStorage storage = FirebaseStorage.getInstance();
             StorageReference storageRef = storage.getReference();
@@ -153,25 +156,123 @@ public class ProfileActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             editor.putString("profileImg", profileImg);
                             Log.d("USER_IMAGE", "SUCCESS");
-                            nicknameChange(newNickname, email, editor, loading);
+
+                            if(!deleteImagePath.equals("")){
+                                FirebaseStorage storageDelete = FirebaseStorage.getInstance();
+                                StorageReference storageRefDelete = storageDelete.getReference();
+
+                                StorageReference refDelete = storageRefDelete.child(deleteImagePath);
+                                refDelete.delete().addOnCompleteListener(taskDelete -> {
+                                    if(taskDelete.isSuccessful()){
+                                        Toast.makeText(ProfileActivity.this, "기존 프로필 사진이 삭제되었습니다.", Toast.LENGTH_SHORT).show();
+                                        db.collection("user")
+                                                .whereEqualTo("email", email)
+                                                .get()
+                                                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                        if(task.isSuccessful()){
+                                                            for(DocumentSnapshot document : task.getResult()){
+                                                                db.collection("user")
+                                                                        .document(document.getId())
+                                                                        .update("profile_img", profileImg)
+                                                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                            @Override
+                                                                            public void onComplete(@NonNull Task<Void> task) {
+                                                                                if(task.isSuccessful()){
+                                                                                    nicknameChange(newNickname, email, editor, loading);
+                                                                                }else {
+                                                                                    Toast.makeText(ProfileActivity.this, "프로필 변경 실패..!", Toast.LENGTH_SHORT).show();
+                                                                                }
+                                                                            }
+                                                                        });
+                                                            }
+                                                        }else {
+                                                            Toast.makeText(ProfileActivity.this, "프로필이미지 저장에 실패하였습니다.", Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    }
+                                                });
+                                    }else {
+                                        Toast.makeText(ProfileActivity.this, "프로필 사진 삭제에 실패하였습니다.", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }else {
+                                db.collection("user")
+                                        .whereEqualTo("email", email)
+                                        .get()
+                                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                if(task.isSuccessful()){
+                                                    for(DocumentSnapshot document : task.getResult()){
+                                                        db.collection("user")
+                                                                .document(document.getId())
+                                                                .update("profile_img", profileImg)
+                                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                    @Override
+                                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                                        if(task.isSuccessful()){
+                                                                            nicknameChange(newNickname, email, editor, loading);
+                                                                        }else {
+                                                                            Toast.makeText(ProfileActivity.this, "프로필 변경 실패..!", Toast.LENGTH_SHORT).show();
+                                                                        }
+                                                                    }
+                                                                });
+                                                    }
+                                                }else {
+                                                    Toast.makeText(ProfileActivity.this, "프로필이미지 저장에 실패하였습니다.", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                        });
+                            }
                         } else {
                             Log.d("USER_IMAGE", task.getException().getLocalizedMessage());
                             Toast.makeText(ProfileActivity.this, "이미지 업로드에 실패 했습니다. 다시 시도해 주세요", Toast.LENGTH_SHORT).show();
                         }
                     });
-        }else {
-            if(!deleteImagePath.equals("")){
-                FirebaseStorage storage = FirebaseStorage.getInstance();
-                StorageReference storageRef = storage.getReference();
+        }else{
+            if(!deleteImagePath.equals("") && !deleteImagePath.equals("profile/")){
+                FirebaseStorage storageDelete = FirebaseStorage.getInstance();
+                StorageReference storageRefDelete = storageDelete.getReference();
 
-                StorageReference ref = storageRef.child(deleteImagePath);
-                ref.delete().addOnCompleteListener(task -> {
-                    if(task.isSuccessful()){
+                StorageReference refDelete = storageRefDelete.child(deleteImagePath);
+                refDelete.delete().addOnCompleteListener(taskDelete -> {
+                    if(taskDelete.isSuccessful()){
                         Toast.makeText(ProfileActivity.this, "기존 프로필 사진이 삭제되었습니다.", Toast.LENGTH_SHORT).show();
+                        editor.putString("profileImg", "");
+                        db.collection("user")
+                                .whereEqualTo("email", email)
+                                .get()
+                                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                        for(DocumentSnapshot document : task.getResult()){
+                                            db.collection("user")
+                                                    .document(document.getId())
+                                                    .update("profile_img", "")
+                                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                            if(task.isSuccessful()){
+                                                                nicknameChange(newNickname, email, editor, loading);
+                                                            }else {
+                                                                Toast.makeText(ProfileActivity.this, "프로필 사진 삭제에 실패하였습니다.", Toast.LENGTH_SHORT).show();
+                                                                loading.dismiss();
+                                                                finish();
+                                                            }
+                                                        }
+                                                    });
+                                        }
+                                    }
+                                });
                     }else {
                         Toast.makeText(ProfileActivity.this, "프로필 사진 삭제에 실패하였습니다.", Toast.LENGTH_SHORT).show();
+                        loading.dismiss();
+                        finish();
                     }
                 });
+            }else {
+                nicknameChange(newNickname, email, editor, loading);
             }
         }
     }
@@ -205,29 +306,67 @@ public class ProfileActivity extends AppCompatActivity {
                 .get()
                 .addOnCompleteListener(task -> {
                     if(task.isSuccessful()){
+                        Log.d("유저 조회", "ㅇㅇ");
                         for(DocumentSnapshot document : task.getResult()){
                             db.collection("user")
                                     .document(document.getId())
                                     .update("nickname", newNickname)
-                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-                                            if(task.isSuccessful()){
-                                                editor.putString("nickname", newNickname);
-                                                editor.apply();
+                                    .addOnCompleteListener(task1 -> {
+                                        if(task1.isSuccessful()){
+                                            Log.d("유저 닉넴 변경", "ㅇㅇ");
+                                            db.collection("calendar")
+                                                    .whereEqualTo("host", email)
+                                                    .get()
+                                                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                            if(task.isSuccessful()){
+                                                                Log.d("캘린더 호스트", "ㅇㅇ");
+                                                                QuerySnapshot result = task.getResult();
+                                                                for(int i=0;i<result.size();i++){
+                                                                    DocumentSnapshot document = result.getDocuments().get(i);
+                                                                    int finalI = i;
+                                                                    db.collection("calendar")
+                                                                            .document(document.getId())
+                                                                            .update("host_nickname", newNickname)
+                                                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                                @Override
+                                                                                public void onComplete(@NonNull Task<Void> task) {
+                                                                                    if(task.isSuccessful()){
+                                                                                        Log.d("호스트 변경", "ㅇㅇ");
+                                                                                        if(finalI == result.size() - 1){
+                                                                                            editor.putString("nickname", newNickname);
+                                                                                            editor.apply();
 
-                                                Toast.makeText(ProfileActivity.this, "프로필 변경 성공!", Toast.LENGTH_SHORT).show();
-                                                Intent intent = new Intent(ProfileActivity.this, CalendarListActivity.class);
-                                                loading.dismiss();
-                                                startActivity(intent);
-                                            }else {
-                                                Toast.makeText(ProfileActivity.this, "닉네임 변경에 실패했습니당 ㅠㅠ\n나중에 다시 변경 해주세요 !", Toast.LENGTH_SHORT).show();
-                                                Intent intent = new Intent(ProfileActivity.this, CalendarListActivity.class);
-                                                loading.dismiss();
-                                                startActivity(intent);
-                                            }
-                                            finishAffinity();
+                                                                                            loading.dismiss();
+                                                                                            Toast.makeText(ProfileActivity.this, "프로필 변경 성공!", Toast.LENGTH_SHORT).show();
+                                                                                            Intent intent = new Intent(ProfileActivity.this, CalendarListActivity.class);
+                                                                                            startActivity(intent);
+                                                                                        }
+                                                                                    }else {
+                                                                                        Toast.makeText(ProfileActivity.this, "닉네임 변경에 실패했습니당 ㅠㅠ\n나중에 다시 변경 해주세요 !", Toast.LENGTH_SHORT).show();
+                                                                                        Intent intent = new Intent(ProfileActivity.this, CalendarListActivity.class);
+                                                                                        loading.dismiss();
+                                                                                        startActivity(intent);
+                                                                                    }
+                                                                                }
+                                                                            });
+                                                                }
+                                                            }else {
+                                                                Toast.makeText(ProfileActivity.this, "닉네임 변경에 실패했습니당 ㅠㅠ\n나중에 다시 변경 해주세요 !", Toast.LENGTH_SHORT).show();
+                                                                Intent intent = new Intent(ProfileActivity.this, CalendarListActivity.class);
+                                                                loading.dismiss();
+                                                                startActivity(intent);
+                                                            }
+                                                        }
+                                                    });
+                                        }else {
+                                            Toast.makeText(ProfileActivity.this, "닉네임 변경에 실패했습니당 ㅠㅠ\n나중에 다시 변경 해주세요 !", Toast.LENGTH_SHORT).show();
+                                            Intent intent = new Intent(ProfileActivity.this, CalendarListActivity.class);
+                                            loading.dismiss();
+                                            startActivity(intent);
                                         }
+                                        finishAffinity();
                                     });
                         }
                     }else {
@@ -250,34 +389,25 @@ public class ProfileActivity extends AppCompatActivity {
             case IMAGE_SELECT:
                 if(resultCode == RESULT_OK){
                     startCrop(data.getData());
-                }else {
-                    imageView.setImageDrawable(getDrawable(R.drawable.profile));
-                    imageUri = null;
-                    profileImg = "";
-                    Toast.makeText(this, "다시 선택해주세요.", Toast.LENGTH_SHORT).show();
                 }
             case CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE:
                 CropImage.ActivityResult result = CropImage.getActivityResult(data);
-                if(resultCode == RESULT_OK){
-                    imageUri = result.getUri();
-                    Glide.with(this)
-                            .load(imageUri)
-                            .override(200, 200)
-                            .into(imageView);
+                if(result != null){
+                    if(resultCode == RESULT_OK){
+                        imageUri = result.getUri();
+                        Glide.with(this)
+                                .load(imageUri)
+                                .override(200, 200)
+                                .into(imageView);
 
-                    if(profileImg.equals("")){
+                        deleteImagePath = afterImg;
+
                         profileImg = "profile/" + getSharedPreferences("user", MODE_PRIVATE)
                                 .getString("email", "")
                                 .split("@")[0]
                                 + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date())
                                 + ".jpg";
                     }
-                }else {
-                    imageView.setImageDrawable(getDrawable(R.drawable.profile));
-                    imageUri = null;
-                    profileImg = "";
-                    Toast.makeText(this, "다시 선택해주세요.", Toast.LENGTH_SHORT).show();
-                    Log.d("크롭 에러", result.getError().getLocalizedMessage());
                 }
         }
     }
@@ -306,12 +436,13 @@ public class ProfileActivity extends AppCompatActivity {
     private void startCrop(Uri uri) {
         Log.d("스타트 크롭", uri.toString());
 
-        CropImage.ActivityBuilder builder = CropImage.activity(uri);
-        builder.setCropShape(CropImageView.CropShape.OVAL)
+        cropBuilder = CropImage.activity(uri);
+        cropBuilder.setCropShape(CropImageView.CropShape.OVAL)
                 .setGuidelines(CropImageView.Guidelines.ON)
                 .setAspectRatio(15, 15)
-                .setFixAspectRatio(true)
-                .start(this);
+                .setFixAspectRatio(true);
+
+        cropBuilder.start(this);
     }
 
     public String urlEncoding(String str) throws UnsupportedEncodingException {

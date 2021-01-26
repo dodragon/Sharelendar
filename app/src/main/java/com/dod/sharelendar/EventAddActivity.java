@@ -83,9 +83,9 @@ public class EventAddActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        ((TextView)findViewById(R.id.year)).setText(year);
-        ((TextView)findViewById(R.id.month)).setText(month);
-        ((TextView)findViewById(R.id.day)).setText(day);
+        ((TextView) findViewById(R.id.year)).setText(year);
+        ((TextView) findViewById(R.id.month)).setText(month);
+        ((TextView) findViewById(R.id.day)).setText(day);
 
         selectColor = Color.parseColor(randomColor());
         GradientDrawable drawable = (GradientDrawable) ContextCompat.getDrawable(this, R.drawable.circle);
@@ -95,8 +95,8 @@ public class EventAddActivity extends AppCompatActivity {
 
 
         imageView.setOnClickListener(v -> {
-            if(colorPicker.getDialogViewLayout().getParent() != null){
-                ((ViewGroup)colorPicker.getDialogViewLayout().getParent()).removeView(colorPicker.getDialogViewLayout());
+            if (colorPicker.getDialogViewLayout().getParent() != null) {
+                ((ViewGroup) colorPicker.getDialogViewLayout().getParent()).removeView(colorPicker.getDialogViewLayout());
             }
 
             colorPicker.setColors(getColors())
@@ -121,37 +121,34 @@ public class EventAddActivity extends AppCompatActivity {
 
         Button datePickerBtn = findViewById(R.id.date_picker);
         datePickerBtn.setText(year + "년 " + month + "월 " + day + "일");
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                if(year == Integer.parseInt(EventAddActivity.this.year) &&
-                        (month + 1) == Integer.parseInt(EventAddActivity.this.month) &&
-                        dayOfMonth == Integer.parseInt(EventAddActivity.this.day)){
-                    findViewById(R.id.one).setEnabled(true);
-                    findViewById(R.id.week).setEnabled(true);
-                    findViewById(R.id.p_month).setEnabled(true);
-                    findViewById(R.id.p_year).setEnabled(true);
-                }else {
-                    ((RadioButton)findViewById(R.id.one)).setChecked(true);
-                    findViewById(R.id.one).setEnabled(false);
-                    findViewById(R.id.week).setEnabled(false);
-                    findViewById(R.id.p_month).setEnabled(false);
-                    findViewById(R.id.p_year).setEnabled(false);
-                }
-
-                datePickerBtn.setText(year + "년 " + ifTen((month + 1)) + "월 " + ifTen(dayOfMonth) + "일");
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+            if (year == Integer.parseInt(EventAddActivity.this.year) &&
+                    (month + 1) == Integer.parseInt(EventAddActivity.this.month) &&
+                    dayOfMonth == Integer.parseInt(EventAddActivity.this.day)) {
+                findViewById(R.id.one).setEnabled(true);
+                findViewById(R.id.week).setEnabled(true);
+                findViewById(R.id.p_month).setEnabled(true);
+                findViewById(R.id.p_year).setEnabled(true);
+            } else {
+                ((RadioButton) findViewById(R.id.one)).setChecked(true);
+                findViewById(R.id.one).setEnabled(false);
+                findViewById(R.id.week).setEnabled(false);
+                findViewById(R.id.p_month).setEnabled(false);
+                findViewById(R.id.p_year).setEnabled(false);
             }
+
+            datePickerBtn.setText(year + "년 " + ifTen((month + 1)) + "월 " + ifTen(dayOfMonth) + "일");
         }, Integer.parseInt(year), Integer.parseInt(month) - 1, Integer.parseInt(day));
         datePickerBtn.setOnClickListener(v -> datePickerDialog.show());
 
         findViewById(R.id.save).setOnClickListener(saveListener);
     }
 
-    private String randomColor(){
+    private String randomColor() {
         return getColors().get(new Random().nextInt(getColors().size()));
     }
 
-    private ArrayList<String> getColors(){
+    private ArrayList<String> getColors() {
         ArrayList<String> colors = new ArrayList<>();
 
         colors.add("#c1db2a");
@@ -173,7 +170,7 @@ public class EventAddActivity extends AppCompatActivity {
     View.OnClickListener saveListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if(validationCheckName() && validationCheckColor()){
+            if (validationCheckName() && validationCheckColor()) {
                 loading.show();
                 try {
                     saveEvent(makeModel());
@@ -184,57 +181,53 @@ public class EventAddActivity extends AppCompatActivity {
         }
     };
 
-    private void saveEvent(List<EventModel> list){
+    private void saveEvent(List<EventModel> list) {
         CollectionReference reference = db.collection("event");
 
-        int position = 0;
-        for(EventModel vo : list){
-            int finalPosition = position;
-            reference.add(vo).addOnCompleteListener(task -> {
-                if(task.isSuccessful()){
-                    Log.d("SAVE_EVENT", finalPosition + "번째 완료");
 
-                    if(finalPosition == list.size() - 1){
+        for (int i=0;i<list.size();i++) {
+            int finalI = i;
+            reference.add(list.get(i)).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Log.d("SAVE_EVENT", finalI + "번째 완료");
+
+                    if (finalI == list.size() - 1) {
                         Toast.makeText(EventAddActivity.this, "일정 추가 완료", Toast.LENGTH_SHORT).show();
                         loading.dismiss();
-                        ((CalendarActivity)CalendarActivity.context).finish();
+                        ((CalendarActivity) CalendarActivity.context).finish();
                         Intent intent = new Intent(EventAddActivity.this, CalendarActivity.class);
                         intent.putExtra("uuid", uuid);
                         startActivity(intent);
                         finish();
                     }
-                }else {
-                    Log.d("SAVE_EVENT", finalPosition + "번째 실패");
-                    Log.d("SAVE_EVENT", task.getException().getLocalizedMessage());
                 }
             });
-            position++;
         }
     }
 
-    private boolean validationCheckName(){
+    private boolean validationCheckName() {
         EditText nameEt = findViewById(R.id.event_name);
-        if(nameEt.getText().toString().equals("") || nameEt.getText().toString() == null){
+        if (nameEt.getText().toString().equals("") || nameEt.getText().toString() == null) {
             Toast.makeText(this, "일정을 입력해 주세요.", Toast.LENGTH_SHORT).show();
             nameEt.setFocusable(true);
             return false;
-        }else {
+        } else {
             return true;
         }
     }
 
-    private boolean validationCheckColor(){
+    private boolean validationCheckColor() {
         int color = selectColor;
         ArrayList<String> colorList = getColors();
         boolean result = false;
-        for(int i=0;i<colorList.size();i++){
-            if(color == Color.parseColor(colorList.get(i))){
+        for (int i = 0; i < colorList.size(); i++) {
+            if (color == Color.parseColor(colorList.get(i))) {
                 result = true;
                 break;
             }
         }
 
-        if(!result){
+        if (!result) {
             Toast.makeText(this, "유효하지 않은 색상 입니다.", Toast.LENGTH_SHORT).show();
         }
 
@@ -246,43 +239,42 @@ public class EventAddActivity extends AppCompatActivity {
         SimpleDateFormat format = new SimpleDateFormat("yyyy년 MM월 dd일");
 
         Date startDate = getDate(date);
-        Date endDate = getDate(format.parse(((Button)findViewById(R.id.date_picker)).getText().toString()));
+        Date endDate = getDate(format.parse(((Button) findViewById(R.id.date_picker)).getText().toString()));
 
-        int listSize = (int)Math.abs((startDate.getTime() - endDate.getTime()) / (24*60*60*1000)) + 1;
+        int listSize = (int) Math.abs((startDate.getTime() - endDate.getTime()) / (24 * 60 * 60 * 1000)) + 1;
         Calendar cal = Calendar.getInstance();
         cal.setTime(startDate);
 
         String color = "";
         List<String> colors = getColors();
-        for(int i=0;i<colors.size();i++){
-            if(Color.parseColor(colors.get(i)) == selectColor){
+        for (int i = 0; i < colors.size(); i++) {
+            if (Color.parseColor(colors.get(i)) == selectColor) {
                 color = colors.get(i);
                 break;
             }
         }
 
-        for(int i=0;i<listSize;i++){
+        String eventUuid = makeUuid(uuid);
+
+        for (int i = 0; i < listSize; i++) {
             cal.add(Calendar.DATE, i);
             Date saveDate = cal.getTime();
 
             EventModel eventModel = new EventModel();
-            eventModel.setEventName(((EditText)findViewById(R.id.event_name)).getText().toString());
+            eventModel.setEventName(((EditText) findViewById(R.id.event_name)).getText().toString());
             eventModel.setCalendar(uuid);
             eventModel.setMakeDate(new Date());
             eventModel.setEventDate(saveDate);
             eventModel.setColor(color);
             eventModel.setRepeat(getRadioResult());
-            eventModel.setEventComment(((EditText)findViewById(R.id.comment)).getText().toString());
+            eventModel.setEventComment(((EditText) findViewById(R.id.comment)).getText().toString());
             eventModel.setMakeUser(getSharedPreferences("user", MODE_PRIVATE).getString("email", ""));
             eventModel.setUserNickname(getSharedPreferences("nickname", MODE_PRIVATE).getString("email", ""));
-            eventModel.setEventUuid(makeUuid(uuid));
+            eventModel.setEventUuid(eventUuid);
 
-            if(listSize > 1){
+            if (i > 0) {
                 eventModel.setContinuous(true);
-                if(i > 0){
-                    eventModel.setEventName("");
-                }
-            }else {
+            } else {
                 eventModel.setContinuous(false);
             }
 
@@ -293,9 +285,9 @@ public class EventAddActivity extends AppCompatActivity {
         return list;
     }
 
-    private String getRadioResult(){
+    private String getRadioResult() {
         RadioGroup group = findViewById(R.id.pattern_picker);
-        switch (group.getCheckedRadioButtonId()){
+        switch (group.getCheckedRadioButtonId()) {
             case R.id.one:
                 return "one";
             case R.id.week:
@@ -318,15 +310,15 @@ public class EventAddActivity extends AppCompatActivity {
         return format.parse(firstDate);
     }
 
-    private String ifTen(int num){
-        if(num < 10){
+    private String ifTen(int num) {
+        if (num < 10) {
             return "0" + num;
-        }else {
+        } else {
             return String.valueOf(num);
         }
     }
 
-    private String makeUuid(String calUuid){
+    private String makeUuid(String calUuid) {
         return "E" + calUuid + new RandomNumber(6).numberGen() +
                 new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
     }

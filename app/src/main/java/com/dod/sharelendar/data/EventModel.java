@@ -30,9 +30,6 @@ public class EventModel implements Serializable {
     @SerializedName("continuous")
     private boolean continuous;
 
-    public EventModel() {
-    }
-
     public String getCalendar() {
         return calendar;
     }

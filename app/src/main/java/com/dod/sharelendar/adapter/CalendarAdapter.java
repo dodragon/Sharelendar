@@ -114,7 +114,11 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
                             break;
                         }
 
-                        holder.eventArr[i].setText(thisDayList.get(i).getEventName());
+                        if(thisDayList.get(i).isContinuous()){
+                            holder.eventArr[i].setText("");
+                        }else {
+                            holder.eventArr[i].setText(thisDayList.get(i).getEventName());
+                        }
                         holder.eventArr[i].setBackgroundColor(Color.parseColor(thisDayList.get(i).getColor()));
                     }
 
